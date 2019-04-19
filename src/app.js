@@ -5,7 +5,7 @@ const assert = require('assert')
 const mongoose = require('mongoose')
 const User = require('./models/user')
 const jwt = require('jsonwebtoken')
-
+const bcrypt = require('bcrypt')
 
 const port = 3000;
 const app = express();
@@ -34,6 +34,17 @@ app.post('/user', (req, res) => {
         }
     })
 
+})
+
+app.post('/user/login', async (req, res) => {
+    try {
+        const user = await User.findByCredentials(req.body.email, req.body.password);
+        res.send(user);
+    }
+    catch (e) {
+        res.status(400).send(e);
+    }
+    // return user;
 })
 
 app.listen(port, () => {
