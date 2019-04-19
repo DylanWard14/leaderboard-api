@@ -4,6 +4,7 @@ const MongoClient = require('mongodb').MongoClient;
 const assert = require('assert')
 const mongoose = require('mongoose')
 const User = require('./models/user')
+const jwt = require('jsonwebtoken')
 
 
 const port = 3000;
@@ -18,6 +19,9 @@ app.get('/', (req,res) => {
 
 app.post('/user', (req, res) => {
     const user = new User(req.body);
+    const token = jwt.sign({ _id: user._id.toString()}, "thisissecret");
+    user.tokens = user.tokens.concat({token});
+
     user.save((err, user) => {
         if(err)
         {
