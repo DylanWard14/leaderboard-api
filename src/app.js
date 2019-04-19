@@ -1,10 +1,35 @@
 const express = require('express')
+const bodyParser = require('body-parser')
+const MongoClient = require('mongodb').MongoClient;
+const assert = require('assert')
+const mongoose = require('mongoose')
+const User = require('./models/user')
+
 
 const port = 3000;
 const app = express();
+app.use(express.json());
+
+mongoose.connect('mongodb://localhost/leaderboard', {useNewUrlParser: true, useCreateIndex: true})
 
 app.get('/', (req,res) => {
     res.send("hello");
+})
+
+app.post('/user', (req, res) => {
+    const user = new User(req.body);
+    user.save((err, user) => {
+        if(err)
+        {
+            return res.send(err);
+        }
+        else
+        {
+            console.log(req.body);
+            res.send('done');
+        }
+    })
+
 })
 
 app.listen(port, () => {
