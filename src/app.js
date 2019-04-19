@@ -82,22 +82,24 @@ app.post('/createGame', (req, res) => {
     })
 })
 
-app.post('/score', async (req, res) => {
+app.post('/score', auth, async (req, res) => {
     if(!req.body.id)
     {
         return res.status(400).send({error: 'please enter a game id'})
     }
 
-    const id = mongoose.Types.ObjectId(req.body.id);
+    const gameID = mongoose.Types.ObjectId(req.body.id);
     
-    const game = await Game.findOne({_id: id});
+    const game = await Game.findOne({_id: gameID});
 
     if(!game)
     {
         return res.status(400).send({error: 'please enter a valid game id'})
     }
 
-    game.scores = game.scores.concat({score: req.body.score})
+    const userID = mongoose.Types.ObjectId(req.user._id);
+
+    game.scores = game.scores.concat({score: req.body.score, owner: userID})
 
     game.save((err, game) => {
         if (err)
@@ -106,6 +108,7 @@ app.post('/score', async (req, res) => {
         }
         else
         {
+            console.log("Score added");
             res.send(game);
         }
     });
