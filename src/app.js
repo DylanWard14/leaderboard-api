@@ -103,4 +103,22 @@ USER {
 }
 
 
+SCORE DATABASE
+
+GAMES [{
+    game: {
+        id: Object ID,
+        title: "Title of the game".
+        description: "Description of the game",
+        scores: [{
+            score: {
+                id: Object id,
+                score: 1234 (users score),
+                owner: Object ID of the owning user
+            }
+        }]
+    }
+}]
+
+
 */
