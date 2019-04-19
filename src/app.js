@@ -3,9 +3,12 @@ const bodyParser = require('body-parser')
 const MongoClient = require('mongodb').MongoClient;
 const assert = require('assert')
 const mongoose = require('mongoose')
-const User = require('./models/user')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
+
+
+const User = require('./models/user')
+const Game = require('./models/game')
 const auth = require('./middleware/auth')
 
 const port = 3000;
@@ -63,6 +66,50 @@ app.post('/user/login', async (req, res) => {
 
 app.get('/user/me', auth, async (req, res) => {
     res.send(req.user);
+})
+
+app.post('/createGame', (req, res) => {
+    const game = new Game({title: 'testGame', description: 'This is a test game'});
+    game.save((err, game) => {
+        if (err)
+        {
+            return res.send(err);
+        }
+        else
+        {
+            res.send("created game");
+        }
+    })
+})
+
+app.post('/score', async (req, res) => {
+    if(!req.body.id)
+    {
+        return res.status(400).send({error: 'please enter a game id'})
+    }
+
+    const id = mongoose.Types.ObjectId(req.body.id);
+    
+    const game = await Game.findOne({_id: id});
+
+    if(!game)
+    {
+        return res.status(400).send({error: 'please enter a valid game id'})
+    }
+
+    game.scores = game.scores.concat({score: req.body.score})
+
+    game.save((err, game) => {
+        if (err)
+        {
+            return res.send(err);
+        }
+        else
+        {
+            res.send(game);
+        }
+    });
+    
 })
 
 app.listen(port, () => {
