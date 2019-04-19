@@ -25,8 +25,8 @@ app.post('/user', (req, res) => {
         }
         else
         {
-            console.log(req.body);
-            res.send('done');
+            console.log("User added");
+            res.send('User added');
         }
     })
 
