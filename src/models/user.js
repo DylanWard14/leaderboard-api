@@ -21,6 +21,13 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    games: [{
+        game: {
+            type: mongoose.Schema.Types.ObjectId,
+            required: true,
+            ref: 'Game'
+        }
+    }],
     tokens: [{
         token: {
             type: String,

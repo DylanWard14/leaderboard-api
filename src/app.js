@@ -68,6 +68,7 @@ app.get('/user/me', auth, async (req, res) => {
     res.send(req.user);
 })
 
+// Creates a new game
 app.post('/createGame', (req, res) => {
     const game = new Game({title: 'testGame', description: 'This is a test game'});
     game.save((err, game) => {
@@ -82,6 +83,39 @@ app.post('/createGame', (req, res) => {
     })
 })
 
+app.post('/addGame', auth, async (req, res) => {
+    if(!req.body.id)
+    {
+        return res.status(400).send({error: 'please enter a game id'})
+    }
+
+    const gameID = mongoose.Types.ObjectId(req.body.id);
+    
+    const game = await Game.findOne({_id: gameID});
+
+    if(!game)
+    {
+        return res.status(400).send({error: 'please enter a valid game id'})
+    }
+
+    const user = req.user;
+
+    user.games = user.games.concat({game: game._id})
+
+    user.save((err, user) => {
+        if(err)
+        {
+            res.send(err);
+        }
+        else
+        {
+            res.send(user);
+        }
+    })
+
+})
+
+// Add a score to the database, add a game id into the json body
 app.post('/score', auth, async (req, res) => {
     if(!req.body.id)
     {
@@ -113,6 +147,15 @@ app.post('/score', auth, async (req, res) => {
         }
     });
     
+})
+
+app.get('/scores/me', auth, async (req, res) => {
+    const user = req.user;
+
+    const games = user.games;
+    // Loop through each game and structure a json object to repond with
+    console.log(games[0]);
+    // console.log(user);
 })
 
 app.listen(port, () => {
