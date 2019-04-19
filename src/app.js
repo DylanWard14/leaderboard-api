@@ -6,6 +6,7 @@ const mongoose = require('mongoose')
 const User = require('./models/user')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
+const auth = require('./middleware/auth')
 
 const port = 3000;
 const app = express();
@@ -39,12 +40,29 @@ app.post('/user', (req, res) => {
 app.post('/user/login', async (req, res) => {
     try {
         const user = await User.findByCredentials(req.body.email, req.body.password);
-        res.send(user);
+        const token = jwt.sign({ _id: user.id.toString()}, "thisissecret");
+        user.tokens = user.tokens.concat({token});
+        user.save((err, user) => {
+            if(err)
+            {
+                return res.send(err);
+            }
+            else
+            {
+                console.log('user updated');
+            }
+        })
+        console.log("User logged in");
+        res.send({user, token});
     }
     catch (e) {
         res.status(400).send(e);
     }
     // return user;
+})
+
+app.get('/user/me', auth, async (req, res) => {
+    res.send(req.user);
 })
 
 app.listen(port, () => {
