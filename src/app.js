@@ -118,35 +118,50 @@ app.post('/addGame', auth, async (req, res) => {
 
 // Add a score to the database, add a game id into the json body
 app.post('/score', auth, async (req, res) => {
+    //Check if game id was entered
     if(!req.body.gameID)
     {
         return res.status(400).send({error: 'please enter a game id'})
     }
-
+    // Check if score was entered
     if(!req.body.score)
     {
         return res.status(400).send({error: 'please enter a score value'})
     }
-
+    // Conver the game id
     const gameID = mongoose.Types.ObjectId(req.body.gameID);
-    // console.log(req.body.id)
-    console.log(gameID);
-    
+    // find the game
     const game = await Game.findOne({_id: gameID});
-
+    // if there is no game
     if(!game)
     {
         return res.status(400).send({error: 'please enter a valid game id'})
     }
-
+    // convert the users id
     const userID = mongoose.Types.ObjectId(req.user._id);
 
+    // Check if the user already has a score in the database
+    const oldScore = await Score.findOne({owner: userID, game: gameID});
+
+    // if a score for this player already exists check if it is lower then the new score
+    if(oldScore)
+    {
+        if(oldScore.score > req.body.score)
+        {
+            return res.send("You did not beat your highscore");
+        }
+        console.log("deleting users old score")
+        console.log(oldScore._id);
+        await Score.deleteOne(oldScore);
+    }
+
+    // Create the json score
     const score = new Score({
         score: req.body.score,
         owner: userID,
         game: gameID
     })
-
+    // save the score
     score.save((err, score) => {
         if (err)
         {
@@ -178,7 +193,6 @@ app.get('/scores/me', auth, async (req, res) => {
     {
         return res.status(400).send({error: 'No scores found'})
     }
-    console.log(scores);
     res.send(scores);
 })
 
