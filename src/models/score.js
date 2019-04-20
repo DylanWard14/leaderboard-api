@@ -6,7 +6,7 @@ const scoreSchema = new mongoose.Schema({
         require: true
     },
     owner: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: String,
         required: true
     },
     game: {

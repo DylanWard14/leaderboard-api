@@ -137,11 +137,12 @@ app.post('/score', auth, async (req, res) => {
     {
         return res.status(400).send({error: 'please enter a valid game id'})
     }
+
     // convert the users id
-    const userID = mongoose.Types.ObjectId(req.user._id);
+    // const userID = mongoose.Types.ObjectId(req.user._id);
 
     // Check if the user already has a score in the database
-    const oldScore = await Score.findOne({owner: userID, game: gameID});
+    const oldScore = await Score.findOne({owner: req.user.name, game: gameID});
 
     // if a score for this player already exists check if it is lower then the new score
     if(oldScore)
@@ -158,7 +159,7 @@ app.post('/score', auth, async (req, res) => {
     // Create the json score
     const score = new Score({
         score: req.body.score,
-        owner: userID,
+        owner: req.user.name,
         game: gameID,
         date: Date.now()
     })
@@ -183,12 +184,12 @@ app.get('/scores/me', auth, async (req, res) => {
 
     if(!req.body.gameID)
     {
-        scores = await Score.find({owner: user._id});
+        scores = await Score.find({owner: user.name});
     }
     else
     {
         const gameID = mongoose.Types.ObjectId(req.body.gameID);
-        scores = await Score.find({owner: user._id, game: gameID});
+        scores = await Score.find({owner: user.name, game: gameID});
     }
 
     if(!scores)
