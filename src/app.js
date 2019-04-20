@@ -9,6 +9,7 @@ const bcrypt = require('bcrypt')
 
 const User = require('./models/user')
 const Game = require('./models/game')
+const Score = require('./models/score')
 const auth = require('./middleware/auth')
 
 const port = 3000;
@@ -117,12 +118,19 @@ app.post('/addGame', auth, async (req, res) => {
 
 // Add a score to the database, add a game id into the json body
 app.post('/score', auth, async (req, res) => {
-    if(!req.body.id)
+    if(!req.body.gameID)
     {
         return res.status(400).send({error: 'please enter a game id'})
     }
 
-    const gameID = mongoose.Types.ObjectId(req.body.id);
+    if(!req.body.score)
+    {
+        return res.status(400).send({error: 'please enter a score value'})
+    }
+
+    const gameID = mongoose.Types.ObjectId(req.body.gameID);
+    // console.log(req.body.id)
+    console.log(gameID);
     
     const game = await Game.findOne({_id: gameID});
 
@@ -133,29 +141,61 @@ app.post('/score', auth, async (req, res) => {
 
     const userID = mongoose.Types.ObjectId(req.user._id);
 
-    game.scores = game.scores.concat({score: req.body.score, owner: userID})
+    const score = new Score({
+        score: req.body.score,
+        owner: userID,
+        game: gameID
+    })
 
-    game.save((err, game) => {
+    score.save((err, score) => {
         if (err)
         {
-            return res.send(err);
+            res.send(err);
         }
         else
         {
-            console.log("Score added");
-            res.send(game);
+            res.send(score);
         }
-    });
+    })
     
 })
 
 app.get('/scores/me', auth, async (req, res) => {
     const user = req.user;
 
-    const games = user.games;
-    // Loop through each game and structure a json object to repond with
-    console.log(games[0]);
-    // console.log(user);
+    const scores = await Score.find({owner: user._id});
+
+    if(!scores)
+    {
+        return res.status(400).send({error: 'No scores found'})
+    }
+    console.log(scores);
+    res.send(scores);
+
+    // const games = user.games;
+    // // Loop through each game and structure a json object to repond with
+    // const userScores = [];
+
+    // // await Promise.all(games.map(async index => {
+    // //     console.log(index);
+    // //     const game = await Game.findOne({_id: index._id});
+    // //     console.log(game);
+    // // }))
+
+    // console.log(games[0]._id);
+    // const game = await Game.findOne({_id: games[0].game});
+    // const scores = game.scores.find((element) => {
+    //     if(element.owner == user._id)
+    //     {
+    //         return element;
+    //     }
+    // });
+    // console.log(scores);
+    // // console.log(game);
+
+    // // console.log(games[0]);
+    // // res.send('done');
+    // // console.log(user);
 })
 
 app.listen(port, () => {
@@ -196,22 +236,22 @@ USER {
 }
 
 
-SCORE DATABASE
+GAME DATABASE
 
 GAMES [{
     game: {
         id: Object ID,
         title: "Title of the game".
-        description: "Description of the game",
-        scores: [{
-            score: {
-                id: Object id,
-                score: 1234 (users score),
-                owner: Object ID of the owning user
-            }
-        }]
-    }
+        description: "Description of the game"
 }]
 
+SCORES DATABASE
 
+SCORES [{
+    score: {
+        id: Object ID,
+        score: int,
+        owner: Object ID of the person who got the score
+    }
+}]
 */
