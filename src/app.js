@@ -71,7 +71,7 @@ app.get('/user/me', auth, async (req, res) => {
 
 // Creates a new game
 app.post('/createGame', (req, res) => {
-    const game = new Game({title: 'testGame', description: 'This is a test game'});
+    const game = new Game({title: 'testGame2', description: 'This is another test game'});
     game.save((err, game) => {
         if (err)
         {
@@ -162,8 +162,17 @@ app.post('/score', auth, async (req, res) => {
 
 app.get('/scores/me', auth, async (req, res) => {
     const user = req.user;
+    let scores;
 
-    const scores = await Score.find({owner: user._id});
+    if(!req.body.gameID)
+    {
+        scores = await Score.find({owner: user._id});
+    }
+    else
+    {
+        const gameID = mongoose.Types.ObjectId(req.body.gameID);
+        scores = await Score.find({owner: user._id, game: gameID});
+    }
 
     if(!scores)
     {
@@ -171,31 +180,21 @@ app.get('/scores/me', auth, async (req, res) => {
     }
     console.log(scores);
     res.send(scores);
+})
 
-    // const games = user.games;
-    // // Loop through each game and structure a json object to repond with
-    // const userScores = [];
+app.get('/scores/game', auth, async (req, res) => {
+    if(!req.body.gameID)
+    {
+        return res.send('Please enter a game id')
+    }
+    const gameID = mongoose.Types.ObjectId(req.body.gameID);
+    const scores = await Score.find({game: gameID});
 
-    // // await Promise.all(games.map(async index => {
-    // //     console.log(index);
-    // //     const game = await Game.findOne({_id: index._id});
-    // //     console.log(game);
-    // // }))
-
-    // console.log(games[0]._id);
-    // const game = await Game.findOne({_id: games[0].game});
-    // const scores = game.scores.find((element) => {
-    //     if(element.owner == user._id)
-    //     {
-    //         return element;
-    //     }
-    // });
-    // console.log(scores);
-    // // console.log(game);
-
-    // // console.log(games[0]);
-    // // res.send('done');
-    // // console.log(user);
+    if(!scores)
+    {
+        return res.send('Unable to find scores, please ensure you have entered the correct game');
+    }
+    res.send(scores);
 })
 
 app.listen(port, () => {
