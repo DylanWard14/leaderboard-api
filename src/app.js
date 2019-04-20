@@ -257,7 +257,7 @@ GAME DATABASE
 GAMES [{
     game: {
         id: Object ID,
-        title: "Title of the game".
+        title: "Title of the game"
         description: "Description of the game"
 }]
 
@@ -267,7 +267,7 @@ SCORES [{
     score: {
         id: Object ID,
         score: int,
-        owner: Object ID of the person who got the score
+        owner: String this will be the name of the owner
     }
 }]
 */
