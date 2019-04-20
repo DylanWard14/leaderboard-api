@@ -159,8 +159,10 @@ app.post('/score', auth, async (req, res) => {
     const score = new Score({
         score: req.body.score,
         owner: userID,
-        game: gameID
+        game: gameID,
+        date: Date.now()
     })
+
     // save the score
     score.save((err, score) => {
         if (err)

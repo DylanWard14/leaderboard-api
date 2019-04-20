@@ -12,6 +12,10 @@ const scoreSchema = new mongoose.Schema({
     game: {
         type: mongoose.Schema.Types.ObjectId,
         required: true
+    },
+    date: {
+        type: Date,
+        required: true
     }
 })
 
