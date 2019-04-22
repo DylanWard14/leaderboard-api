@@ -161,7 +161,7 @@ app.post('/score', auth, async (req, res) => {
     // Create the json score
     const score = new Score({
         score: req.body.score,
-        owner: req.user.name,
+        owner: req.user.username,
         game: gameID,
         date: Date.now()
     })
