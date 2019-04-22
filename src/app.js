@@ -1,6 +1,4 @@
 const express = require('express')
-const MongoClient = require('mongodb').MongoClient;
-const assert = require('assert')
 const mongoose = require('mongoose')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
@@ -233,7 +231,9 @@ app.get('/scores/game', auth, async (req, res) => {
             sortBy = '-'+sortField;
         }
     }
-    const scores = await Score.find({game: gameID}).sort(sortBy);
+    const limit = parseInt(req.query.limit);
+    const skip = parseInt(req.query.skip);
+    const scores = await Score.find({game: gameID}).sort(sortBy).limit(limit).skip(skip);
 
     if(!scores)
     {
