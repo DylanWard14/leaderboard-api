@@ -213,7 +213,32 @@ app.get('/scores/game', auth, async (req, res) => {
         return res.send('Please enter a game id')
     }
     const gameID = mongoose.Types.ObjectId(req.body.gameID);
-    const scores = await Score.find({game: gameID}).sort("-date");
+    let sortBy = "-score";
+
+    if(req.query.sortBy)
+    {
+        const sortField = req.query.sortBy.split(':')[0];
+        const order = req.query.sortBy.split(":")[1];
+
+        if(sortField.toLowerCase() != 'score' && sortField.toLowerCase() != 'date')
+        {
+            return res.status(400).send({error: 'Please enter a valid search field'})
+        }
+        else if (order.toLowerCase() != 'asc' && order.toLowerCase() != 'desc')
+        {
+            return res.status(400).send({error: 'Please enter a valid sort order'})
+        }
+        
+        if(order.toLowerCase() == 'asc')
+        {
+            sortBy = sortField;
+        }
+        else
+        {
+            sortBy = '-'+sortField;
+        }
+    }
+    const scores = await Score.find({game: gameID}).sort(sortBy);
 
     if(!scores)
     {
