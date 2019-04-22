@@ -29,23 +29,18 @@ app.get('/', (req,res) => {
     res.send("hello");
 })
 
-app.post('/user', (req, res) => {
+app.post('/user', async (req, res) => {
     const user = new User(req.body);
-    const token = jwt.sign({ _id: user._id.toString()}, "thisissecret");
-    user.tokens = user.tokens.concat({token});
 
-    user.save((err, user) => {
-        if(err)
-        {
-            return res.send(err);
-        }
-        else
-        {
-            console.log("User added");
-            res.send('User added');
-        }
-    })
-
+    try{
+        await user.save();
+        const token = jwt.sign({ _id: user._id.toString()}, "thisissecret");
+        user.tokens = user.tokens.concat({token});
+        await user.save();
+        res.status(201).send('User added');
+    } catch (e) {
+        res.status(400).send(e);
+    }
 })
 
 app.post('/user/login', async (req, res) => {
