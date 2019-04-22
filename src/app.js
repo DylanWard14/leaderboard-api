@@ -1,5 +1,4 @@
 const express = require('express')
-const bodyParser = require('body-parser')
 const MongoClient = require('mongodb').MongoClient;
 const assert = require('assert')
 const mongoose = require('mongoose')
@@ -16,7 +15,15 @@ const port = 3000;
 const app = express();
 app.use(express.json());
 
-mongoose.connect('mongodb://localhost/leaderboard', {useNewUrlParser: true, useCreateIndex: true})
+mongoose.connect('mongodb://localhost/leaderboard', {useNewUrlParser: true, useCreateIndex: true}).then(
+    () => {
+        console.log("Connection to mongodb database successful");
+    },
+    err => {
+        console.log('Error connecting to mongodb database');
+    }
+);
+
 
 app.get('/', (req,res) => {
     res.send("hello");
@@ -179,6 +186,7 @@ app.post('/score', auth, async (req, res) => {
 })
 
 app.get('/scores/me', auth, async (req, res) => {
+     
     const user = req.user;
     let scores;
 
@@ -205,12 +213,13 @@ app.get('/scores/game', auth, async (req, res) => {
         return res.send('Please enter a game id')
     }
     const gameID = mongoose.Types.ObjectId(req.body.gameID);
-    const scores = await Score.find({game: gameID});
+    const scores = await Score.find({game: gameID}).sort("-date");
 
     if(!scores)
     {
         return res.send('Unable to find scores, please ensure you have entered the correct game');
     }
+
     res.send(scores);
 })
 
