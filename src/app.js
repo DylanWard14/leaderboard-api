@@ -29,7 +29,7 @@ app.get('/', (req,res) => {
 
 app.post('/user', async (req, res) => {
     const user = new User(req.body);
-
+    
     try{
         await user.save();
         const token = jwt.sign({ _id: user._id.toString()}, "thisissecret");
@@ -71,7 +71,7 @@ app.get('/user/me', auth, async (req, res) => {
 
 // Creates a new game
 app.post('/createGame', (req, res) => {
-    const game = new Game({title: 'testGame2', description: 'This is another test game'});
+    const game = new Game({title: 'testGame3', description: 'This is another test game'});
     game.save((err, game) => {
         if (err)
         {
@@ -179,24 +179,25 @@ app.post('/score', auth, async (req, res) => {
 })
 
 app.get('/scores/me', auth, async (req, res) => {
-     
     const user = req.user;
     let scores;
 
     if(!req.body.gameID)
     {
-        scores = await Score.find({owner: user.name});
+        scores = await Score.find({owner: user.username});
+
     }
     else
     {
         const gameID = mongoose.Types.ObjectId(req.body.gameID);
-        scores = await Score.find({owner: user.name, game: gameID});
+        scores = await Score.find({owner: user.username, game: gameID});
     }
 
     if(!scores)
     {
         return res.status(400).send({error: 'No scores found'})
     }
+
     res.send(scores);
 })
 
@@ -241,6 +242,12 @@ app.get('/scores/game', auth, async (req, res) => {
     }
 
     res.send(scores);
+})
+
+app.get('/test', (req,res) => {
+    res.send({
+        message: "this is working"
+    });
 })
 
 app.listen(port, () => {
