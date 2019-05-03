@@ -60,7 +60,7 @@ app.post('/user/login', async (req, res) => {
         res.send({user, token});
     }
     catch (e) {
-        res.status(400).send(e);
+        res.status(400).send({error: 'Incorrect username or password'});
     }
     // return user;
 })
@@ -202,11 +202,13 @@ app.get('/scores/me', auth, async (req, res) => {
 })
 
 app.get('/scores/game', auth, async (req, res) => {
-    if(!req.body.gameID)
+    if(!req.query.title)
     {
-        return res.send('Please enter a game id')
+        return res.send('Please enter a game title')
     }
-    const gameID = mongoose.Types.ObjectId(req.body.gameID);
+    const title = req.query.title;
+    const gameID = await Game.find({title: title});
+    //mongoose.Types.ObjectId(req.body.gameID);
     let sortBy = "-score";
 
     if(req.query.sortBy)
