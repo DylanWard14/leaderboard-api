@@ -207,7 +207,14 @@ app.get('/scores/game', auth, async (req, res) => {
         return res.send('Please enter a game title')
     }
     const title = req.query.title;
-    const gameID = await Game.find({title: title});
+    const game = await Game.find({title: title});
+    if (!game[0])
+    {
+        return res.status(400).send({error: 'unable to find game'})
+    }
+
+    console.log(game[0]);
+
     //mongoose.Types.ObjectId(req.body.gameID);
     let sortBy = "-score";
 
@@ -236,7 +243,7 @@ app.get('/scores/game', auth, async (req, res) => {
     }
     const limit = parseInt(req.query.limit);
     const skip = parseInt(req.query.skip);
-    const scores = await Score.find({game: gameID}).sort(sortBy).limit(limit).skip(skip);
+    const scores = await Score.find({game: game[0]._id}).sort(sortBy).limit(limit).skip(skip);
 
     if(!scores)
     {
