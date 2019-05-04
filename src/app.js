@@ -88,6 +88,27 @@ app.post('/user/logout', auth, async (req, res) => {
     }
 })
 
+app.post('/user/logout/all', auth, async (req, res) => {
+    try {
+        user = req.user;
+        user.tokens = [];
+
+        await user.save((err, user) => {
+            if (err)
+            {
+                return res.status(500).send({error: "error logging out"})
+            }
+            else
+            {
+                return res.send(user);
+            }
+        })
+    }
+    catch (e) {
+        res.status(500).send();
+    }
+})
+
 app.get('/user/me', auth, async (req, res) => {
     res.send(req.user);
 })
