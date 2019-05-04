@@ -202,20 +202,30 @@ app.get('/scores/me', auth, async (req, res) => {
 })
 
 app.get('/scores/game', auth, async (req, res) => {
-    if(!req.query.title)
+    if(!req.query.title && !req.query.gameID)
     {
-        return res.send('Please enter a game title')
+        return res.send('Please enter a valid game')
     }
     const title = req.query.title;
-    const game = await Game.find({title: title});
-    if (!game[0])
+    let gameID = req.query.gameID;
+    let game;
+    if (title)
+    {
+        game = await Game.findOne({title: title});
+    }
+    else if (gameID && mongoose.Types.ObjectId.isValid(gameID))
+    {   
+        console.log(gameID);
+        game = await Game.findOne({_id: gameID})
+    }
+    if (!game)
     {
         return res.status(400).send({error: 'unable to find game'})
     }
 
-    console.log(game[0]);
+    console.log(game);
 
-    //mongoose.Types.ObjectId(req.body.gameID);
+    
     let sortBy = "-score";
 
     if(req.query.sortBy)
@@ -243,7 +253,7 @@ app.get('/scores/game', auth, async (req, res) => {
     }
     const limit = parseInt(req.query.limit);
     const skip = parseInt(req.query.skip);
-    const scores = await Score.find({game: game[0]._id}).sort(sortBy).limit(limit).skip(skip);
+    const scores = await Score.find({game: game._id}).sort(sortBy).limit(limit).skip(skip);
 
     if(!scores)
     {
@@ -316,3 +326,17 @@ SCORES [{
     }
 }]
 */
+
+
+// What abilities are need for the developer in a game?
+// The developer needs to be able to search the database for their game, finding all scores with a game ID.
+// They need to be able to filter those scores in a certain order.
+// They need to be able to toggle between showing the current users friends leaderboard and the global leaderboard.
+// The user needs to be able to add friends
+// The user needs to be able to log out
+// 
+
+
+// Website features
+// user needs to be able to search for a certain game
+// user needs to be able to see all their score and their friend scores
