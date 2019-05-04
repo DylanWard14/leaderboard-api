@@ -65,6 +65,29 @@ app.post('/user/login', async (req, res) => {
     // return user;
 })
 
+app.post('/user/logout', auth, async (req, res) => {
+    try {
+        user = req.user;
+        user.tokens = user.tokens.filter((token) => {
+            return token.token !== req.token;
+        })
+
+        await user.save((err, user) => {
+            if (err)
+            {
+                return res.status(500).send({error: "error logging out"})
+            }
+            else
+            {
+                res.send(user);
+            }
+        })
+    }
+    catch (e) {
+        res.status(500).send();
+    }
+})
+
 app.get('/user/me', auth, async (req, res) => {
     res.send(req.user);
 })
@@ -202,6 +225,7 @@ app.get('/scores/me', auth, async (req, res) => {
 })
 
 app.get('/scores/game', auth, async (req, res) => {
+    // If a title or a game id was not supplied
     if(!req.query.title && !req.query.gameID)
     {
         return res.send('Please enter a valid game')
@@ -209,25 +233,26 @@ app.get('/scores/game', auth, async (req, res) => {
     const title = req.query.title;
     let gameID = req.query.gameID;
     let game;
+
     if (title)
     {
+        //If the title was supplied search by it
         game = await Game.findOne({title: title});
     }
     else if (gameID && mongoose.Types.ObjectId.isValid(gameID))
     {   
-        console.log(gameID);
+        // if the game id was supplied then search with that instead
         game = await Game.findOne({_id: gameID})
     }
     if (!game)
     {
+        // If no game was found then return an error
         return res.status(400).send({error: 'unable to find game'})
     }
-
-    console.log(game);
-
     
     let sortBy = "-score";
 
+    // Handle the filtering
     if(req.query.sortBy)
     {
         const sortField = req.query.sortBy.split(':')[0];
@@ -253,6 +278,7 @@ app.get('/scores/game', auth, async (req, res) => {
     }
     const limit = parseInt(req.query.limit);
     const skip = parseInt(req.query.skip);
+    // Find the scores
     const scores = await Score.find({game: game._id}).sort(sortBy).limit(limit).skip(skip);
 
     if(!scores)
