@@ -333,7 +333,16 @@ app.post('/friend', auth, async (req, res) => {
         return res.status(400).send({error: 'Unable to find user, please enter a valid user'});
     }
 
-    console.log(friendToAdd);
+    let friendAlreadyExists = user.friends.some(function (friend) {
+        return friend.equals(friendToAdd._id);
+    });
+
+    if(friendAlreadyExists)
+    {
+        return res.status(400).send({error: "Friend already in friends list"});
+    }
+
+    console.log(friendAlreadyExists);
 
     user.friends = user.friends.concat(friendToAdd._id);
     await user.save((err, user) => {
