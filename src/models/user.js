@@ -36,6 +36,13 @@ const userSchema = new mongoose.Schema({
             ref: 'Game'
         }
     }],
+    friends: [{
+        friend: {
+            type: mongoose.Schema.Types.ObjectId,
+            required: true,
+            ref: 'User'
+        }
+    }],
     tokens: [{
         token: {
             type: String,

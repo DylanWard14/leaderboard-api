@@ -310,6 +310,44 @@ app.get('/scores/game', auth, async (req, res) => {
     res.send(scores);
 })
 
+app.post('/friend', auth, async (req, res) => {
+    const user = req.user;
+
+    if (!req.body.username && !req.body.friendID)
+    {
+        return res.status(400).send({error: 'Please enter a username or friend ID'});
+    }
+
+    let friendToAdd;
+    if(req.body.username)
+    {
+        friendToAdd = await User.findOne({username: req.body.username});
+    }
+    else if (req.body.friendID)
+    {
+        friendToAdd = await User.findOne({_id: req.body.friendID});
+    }
+
+    if(!friendToAdd)
+    {
+        return res.status(400).send({error: 'Unable to find user, please enter a valid user'});
+    }
+
+    console.log(friendToAdd);
+
+    user.friends = user.friends.concat({friend: friendToAdd._id});
+    await user.save((err, user) => {
+        if (err)
+        {
+            return res.status(500).send({error: 'error adding user'})
+        }
+        else
+        {
+            return res.send(user)
+        }
+    })
+})
+
 app.get('/test', (req,res) => {
     res.send({
         message: "this is working"
@@ -387,3 +425,8 @@ SCORES [{
 // Website features
 // user needs to be able to search for a certain game
 // user needs to be able to see all their score and their friend scores
+
+
+// Populating friends leaderboard...
+// Create a list of all the friends with the desired game
+// sort that list via the users scores.
