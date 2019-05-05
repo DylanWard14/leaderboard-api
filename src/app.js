@@ -335,7 +335,7 @@ app.post('/friend', auth, async (req, res) => {
 
     console.log(friendToAdd);
 
-    user.friends = user.friends.concat({friend: friendToAdd._id});
+    user.friends = user.friends.concat(friendToAdd._id);
     await user.save((err, user) => {
         if (err)
         {
@@ -346,6 +346,14 @@ app.post('/friend', auth, async (req, res) => {
             return res.send(user)
         }
     })
+})
+
+app.get('/friends', auth, async (req, res) => {
+    const user = req.user;
+    const friends = await User.find({_id: { $in: user.friends}})
+    console.log(friends);
+
+    res.send(friends);
 })
 
 app.get('/test', (req,res) => {
