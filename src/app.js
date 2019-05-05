@@ -3,7 +3,6 @@ const mongoose = require('mongoose')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 
-
 const User = require('./models/user')
 const Game = require('./models/game')
 const Score = require('./models/score')
@@ -21,11 +20,6 @@ mongoose.connect('mongodb://localhost/leaderboard', {useNewUrlParser: true, useC
         console.log('Error connecting to mongodb database');
     }
 );
-
-
-app.get('/', (req,res) => {
-    res.send("hello");
-})
 
 app.post('/user', async (req, res) => {
     const user = new User(req.body);
@@ -296,8 +290,30 @@ app.get('/scores/game', auth, async (req, res) => {
     }
     const limit = parseInt(req.query.limit);
     const skip = parseInt(req.query.skip);
-    // Find the scores
-    const scores = await Score.find({game: game._id}).sort(sortBy).limit(limit).skip(skip);
+
+    let scores = undefined;
+
+    //Check if this is a friends only list
+
+    if(req.query.friends.toLowerCase() == 'true')
+    {
+        const user = req.user;
+        const friends = await User.find({_id: { $in: user.friends}});
+        // Loop through all friends and save their usernames
+        let usernames = friends.map((friend) => {
+            return friend.username;
+        })
+    
+        usernames = usernames.concat(user.username);
+        scores = await Score.find({game: game._id, owner: { $in: usernames}}).sort(sortBy).limit(limit).skip(skip);
+    }
+    else
+    {
+        // Find the scores
+        scores = await Score.find({game: game._id}).sort(sortBy).limit(limit).skip(skip);
+    }
+
+    
 
     if(!scores)
     {
@@ -362,15 +378,38 @@ app.post('/friend', auth, async (req, res) => {
 app.get('/friends', auth, async (req, res) => {
     const user = req.user;
     const friends = await User.find({_id: { $in: user.friends}})
-    console.log(friends);
 
     res.send(friends);
 })
 
-app.get('/test', (req,res) => {
-    res.send({
-        message: "this is working"
-    });
+// Get the scores of another user
+app.get('/scores/other', async(req,res) => {
+    const otherID = req.query.id;
+    const otherName = req.query.username;
+    if(!otherID && !otherName)
+    {
+        return res.status(400).send({error: 'please enter a user to search'});
+    }
+
+    let scores;
+    // if an id was enter then search by ID
+    if (otherID)
+    {
+        const other = await User.findOne({_id: otherID});
+        scores = await Score.find({owner: other.username});
+    }
+    // if not then search by the name
+    else if(otherName)
+    {
+        scores = await Score.find({owner: otherName});
+    }
+
+    if(!scores)
+    {
+        return res.status(400).send({error: 'Unable to find scores for this user'});
+    }
+
+    res.send(scores);
 })
 
 app.listen(port, () => {
