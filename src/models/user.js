@@ -29,15 +29,11 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    games: [{
-        game: {
-            type: mongoose.Schema.Types.ObjectId,
-            required: true,
-            ref: 'Game'
-        }
-    }],
+    games: [
+        mongoose.Schema.Types.ObjectId
+    ],
     friends: [
-            mongoose.Schema.Types.ObjectId
+        mongoose.Schema.Types.ObjectId
     ],
     tokens: [{
         token: {

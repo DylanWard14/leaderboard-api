@@ -145,7 +145,7 @@ app.post('/addGame', auth, async (req, res) => {
 
     const user = req.user;
 
-    user.games = user.games.concat({game: game._id})
+    user.games = user.games.concat(game._id)
 
     user.save((err, user) => {
         if(err)
@@ -181,9 +181,6 @@ app.post('/score', auth, async (req, res) => {
     {
         return res.status(400).send({error: 'please enter a valid game id'})
     }
-
-    // convert the users id
-    // const userID = mongoose.Types.ObjectId(req.user._id);
 
     // Check if the user already has a score in the database
     const oldScore = await Score.findOne({owner: req.user.name, game: gameID});
@@ -305,6 +302,11 @@ app.get('/scores/game', auth, async (req, res) => {
     if(!scores)
     {
         return res.send('Unable to find scores, please ensure you have entered the correct game');
+    }
+
+    if (scores.length == 0)
+    {
+        return res.send('No scores have been achieved yet')
     }
 
     res.send(scores);
