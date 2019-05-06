@@ -12,6 +12,7 @@ const port = 3000;
 const app = express();
 app.use(express.json());
 
+// Connect to the database at localhost:leadboard
 mongoose.connect('mongodb://localhost/leaderboard', {useNewUrlParser: true, useCreateIndex: true}).then(
     () => {
         console.log("Connection to mongodb database successful");
@@ -21,6 +22,7 @@ mongoose.connect('mongodb://localhost/leaderboard', {useNewUrlParser: true, useC
     }
 );
 
+// Create a user
 app.post('/user', async (req, res) => {
     const user = new User(req.body);
     
@@ -35,6 +37,7 @@ app.post('/user', async (req, res) => {
     }
 })
 
+// Login a user
 app.post('/user/login', async (req, res) => {
     try {
         const user = await User.findByCredentials(req.body.email, req.body.password);
@@ -56,9 +59,9 @@ app.post('/user/login', async (req, res) => {
     catch (e) {
         res.status(400).send({error: 'Incorrect username or password'});
     }
-    // return user;
 })
 
+// Logout a user
 app.post('/user/logout', auth, async (req, res) => {
     try {
         user = req.user;
@@ -82,6 +85,7 @@ app.post('/user/logout', auth, async (req, res) => {
     }
 })
 
+// Logout a user from all locations, removing all of the JSON Web Tokens
 app.post('/user/logout/all', auth, async (req, res) => {
     try {
         user = req.user;
@@ -103,13 +107,22 @@ app.post('/user/logout/all', auth, async (req, res) => {
     }
 })
 
+// Get the current users profile
 app.get('/user/me', auth, async (req, res) => {
     res.send(req.user);
 })
 
 // Creates a new game
 app.post('/createGame', (req, res) => {
-    const game = new Game({title: 'testGame3', description: 'This is another test game'});
+    const title = req.body.title;
+    const description = req.body.description;
+
+    if (!title || !description)
+    {
+        return res.status(400).send({error: 'Please enter a title and description'})
+    }
+    const game = new Game({title, description});
+
     game.save((err, game) => {
         if (err)
         {
@@ -122,6 +135,7 @@ app.post('/createGame', (req, res) => {
     })
 })
 
+// Add this game to the user, essentially saying that the user has played/owns the game
 app.post('/addGame', auth, async (req, res) => {
     if(!req.body.id)
     {
@@ -213,6 +227,7 @@ app.post('/score', auth, async (req, res) => {
     
 })
 
+// Fetch all the scores for the current user
 app.get('/scores/me', auth, async (req, res) => {
     const user = req.user;
     let scores;
@@ -236,6 +251,7 @@ app.get('/scores/me', auth, async (req, res) => {
     res.send(scores);
 })
 
+// Search the leaderboard for a specific game with options to sort it in date/score order and filter by friends only
 app.get('/scores/game', auth, async (req, res) => {
     // If a title or a game id was not supplied
     if(!req.query.title && !req.query.gameID)
@@ -328,6 +344,7 @@ app.get('/scores/game', auth, async (req, res) => {
     res.send(scores);
 })
 
+// Add a friend
 app.post('/friend', auth, async (req, res) => {
     const user = req.user;
 
@@ -483,8 +500,3 @@ SCORES [{
 // Website features
 // user needs to be able to search for a certain game
 // user needs to be able to see all their score and their friend scores
-
-
-// Populating friends leaderboard...
-// Create a list of all the friends with the desired game
-// sort that list via the users scores.
