@@ -311,7 +311,7 @@ app.get('/scores/game', auth, async (req, res) => {
 
     //Check if this is a friends only list
 
-    if(req.query.friends.toLowerCase() == 'true')
+    if(req.query.friends && req.query.friends.toLowerCase() == 'true')
     {
         const user = req.user;
         const friends = await User.find({_id: { $in: user.friends}});
