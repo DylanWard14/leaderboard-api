@@ -4,7 +4,11 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "env-cmd ./config/dev.env nodemon src/index.js",
+    "test": "env-cmd ./config/test.env jest --watch --runInBand --detectOpenHandles"
+  },
+  "jest": {
+    "testEnvironment": "node"
   },
   "author": "Dylan Ward",
   "license": "ISC",
@@ -14,5 +18,11 @@
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.5.1",
     "validator": "^10.11.0"
+  },
+  "devDependencies": {
+    "env-cmd": "^8.0.2",
+    "jest": "^24.8.0",
+    "nodemon": "^1.19.0",
+    "supertest": "^4.0.2"
   }
 }

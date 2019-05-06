@@ -8,17 +8,16 @@ const Game = require('./models/game')
 const Score = require('./models/score')
 const auth = require('./middleware/auth')
 
-const port = 3000;
 const app = express();
 app.use(express.json());
 
 // Connect to the database at localhost:leadboard
-mongoose.connect('mongodb://localhost/leaderboard', {useNewUrlParser: true, useCreateIndex: true}).then(
+mongoose.connect(process.env.MONGODB_URL, {useNewUrlParser: true, useCreateIndex: true}).then(
     () => {
-        console.log("Connection to mongodb database successful");
+        // console.log("Connection to mongodb database successful");
     },
     err => {
-        console.log('Error connecting to mongodb database');
+        // console.log('Error connecting to mongodb database');
     }
 );
 
@@ -27,11 +26,11 @@ app.post('/user', async (req, res) => {
     const user = new User(req.body);
     
     try{
-        await user.save();
-        const token = jwt.sign({ _id: user._id.toString()}, "thisissecret");
+        // await user.save();
+        const token = jwt.sign({ _id: user._id.toString()}, process.env.JWT_SECRET);
         user.tokens = user.tokens.concat({token});
         await user.save();
-        res.status(201).send('User added');
+        res.status(201).send({user, token});
     } catch (e) {
         res.status(400).send(e);
     }
@@ -41,16 +40,12 @@ app.post('/user', async (req, res) => {
 app.post('/user/login', async (req, res) => {
     try {
         const user = await User.findByCredentials(req.body.email, req.body.password);
-        const token = jwt.sign({ _id: user.id.toString()}, "thisissecret");
+        const token = jwt.sign({ _id: user.id.toString()}, process.env.JWT_SECRET);
         user.tokens = user.tokens.concat({token});
         user.save((err, user) => {
             if(err)
             {
                 return res.send(err);
-            }
-            else
-            {
-                console.log('user updated');
             }
         })
         console.log("User logged in");
@@ -428,9 +423,7 @@ app.get('/scores/other', async(req,res) => {
     res.send(scores);
 })
 
-app.listen(port, () => {
-    console.log('server is up on port ' + port);
-})
+module.exports = app;
 
 /* DATABASE DESIGN
 
