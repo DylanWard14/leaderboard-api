@@ -329,8 +329,6 @@ app.get('/scores/game', auth, async (req, res) => {
         scores = await Score.find({game: game._id}).sort(sortBy).limit(limit).skip(skip);
     }
 
-    
-
     if(!scores)
     {
         return res.send('Unable to find scores, please ensure you have entered the correct game');
@@ -392,6 +390,7 @@ app.post('/friend', auth, async (req, res) => {
     })
 })
 
+// Get all the current users friends
 app.get('/friends', auth, async (req, res) => {
     const user = req.user;
     const friends = await User.find({_id: { $in: user.friends}})
