@@ -16,13 +16,39 @@ const userOne = {
     }]
 }
 
+const gameOneID = new mongoose.Types.ObjectId();
+const gameOne = {
+    _id: gameOneID,
+    title: 'test game',
+    description: 'This is a test game'
+}
+
+const scoreOneID = new mongoose.Types.ObjectId();
+const scoreOneDate = Date.now();
+const scoreOne = {
+    _id: scoreOneID,
+    score: 100,
+    owner: userOne.username,
+    game: gameOneID,
+    date: scoreOneDate
+};
+
 const setupDatabase = async () => {
     await User.deleteMany();
+    await Game.deleteMany();
+    await Score.deleteMany();
     await new User(userOne).save();
+    await new Game(gameOne).save();
+    await new Score(scoreOne).save();
 }
 
 module.exports = {
     userOneID,
     userOne,
+    gameOneID,
+    gameOne,
+    scoreOneID,
+    scoreOneDate,
+    scoreOne,
     setupDatabase
 }

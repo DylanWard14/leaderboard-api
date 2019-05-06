@@ -1,7 +1,13 @@
 const request = require('supertest');
 const app = require("../src/app");
 const User = require('../src/models/user');
-const {userOneID, userOne, setupDatabase} = require('./fixtures/db');
+const {
+    userOneID, 
+    userOne, 
+    gameOneID,
+    gameOne,
+    setupDatabase
+} = require('./fixtures/db');
 
 beforeEach(setupDatabase);
 
@@ -37,4 +43,55 @@ test("Should login existing user", async () => {
 
     const user = await User.findById(userOneID);
     expect(response.body.token).toBe(user.tokens[1].token);
+})
+
+test("Should read the current users profile", async () => {
+    const response = await request(app)
+    .get('/user/me')
+    .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+    .send()
+    .expect(200);
+
+    expect(response.body).toMatchObject({
+        name: userOne.name,
+        username: userOne.username,
+        email: userOne.email
+    })
+})
+
+test("Should logout user", async () => {
+    await request(app)
+    .post('/user/logout')
+    .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+    .send()
+    .expect(200);
+
+
+    const user = await User.findById(userOneID);
+    expect(user.tokens[0]).not.toBe(userOne.tokens[0].token);
+})
+
+test("Should logout user from all devices", async () => {
+    await request(app).post('/user/login').send({
+        email: userOne.email,
+        password: userOne.password
+    }).expect(200);
+
+    await request(app).post('/user/login').send({
+        email: userOne.email,
+        password: userOne.password
+    }).expect(200);
+
+    let user = await User.findById(userOneID);
+
+    expect(user.tokens.length).toEqual(3);
+
+    await request(app)
+    .post('/user/logout/all')
+    .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+    .send()
+    .expect(200);
+
+    user = await User.findById(userOneID);
+    expect(user.tokens.length).toEqual(0);
 })

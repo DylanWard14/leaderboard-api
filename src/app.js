@@ -48,7 +48,6 @@ app.post('/user/login', async (req, res) => {
                 return res.send(err);
             }
         })
-        console.log("User logged in");
         res.send({user, token});
     }
     catch (e) {
@@ -121,11 +120,11 @@ app.post('/createGame', (req, res) => {
     game.save((err, game) => {
         if (err)
         {
-            return res.send(err);
+            return res.status(400).send(err);
         }
         else
         {
-            res.send("created game");
+            res.send(game);
         }
     })
 })
@@ -153,7 +152,7 @@ app.post('/addGame', auth, async (req, res) => {
     user.save((err, user) => {
         if(err)
         {
-            res.send(err);
+            res.status(400).send(err);
         }
         else
         {
