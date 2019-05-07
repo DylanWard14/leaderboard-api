@@ -250,7 +250,7 @@ app.get('/scores/game', auth, async (req, res) => {
     // If a title or a game id was not supplied
     if(!req.query.title && !req.query.gameID)
     {
-        return res.send('Please enter a valid game')
+        return res.status(400).send({error: 'Please enter a valid game'})
     }
     const title = req.query.title;
     let gameID = req.query.gameID;
@@ -325,12 +325,12 @@ app.get('/scores/game', auth, async (req, res) => {
 
     if(!scores)
     {
-        return res.send('Unable to find scores, please ensure you have entered the correct game');
+        return res.status(400).send({error: 'Unable to find scores, please ensure you have entered the correct game'});
     }
 
     if (scores.length == 0)
     {
-        return res.send('No scores have been achieved yet')
+        return res.status(400).send({error: 'No scores have been achieved yet'})
     }
 
     res.send(scores);
@@ -368,8 +368,6 @@ app.post('/friend', auth, async (req, res) => {
     {
         return res.status(400).send({error: "Friend already in friends list"});
     }
-
-    console.log(friendAlreadyExists);
 
     user.friends = user.friends.concat(friendToAdd._id);
     await user.save((err, user) => {

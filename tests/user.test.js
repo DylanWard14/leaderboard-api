@@ -3,7 +3,10 @@ const app = require("../src/app");
 const User = require('../src/models/user');
 const {
     userOneID, 
-    userOne, 
+    userOne,
+    userTwo,
+    userThreeID,
+    userThree,
     gameOneID,
     gameOne,
     setupDatabase
@@ -94,4 +97,32 @@ test("Should logout user from all devices", async () => {
 
     user = await User.findById(userOneID);
     expect(user.tokens.length).toEqual(0);
+})
+
+// Get friends
+test("Should get info of friends", async () => {
+    const response = await request(app)
+    .get('/friends')
+    .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+    .expect(200);
+
+    expect(response.body[0]).toMatchObject({
+        _id: userTwo._id.toString(),
+        email: userTwo.email,
+        name: userTwo.name,
+        username: userTwo.username
+    });
+})
+
+// Add friend
+test("Should add a friend", async () => {
+    const response = await request(app)
+    .post('/friend')
+    .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+    .send({username: userThree.username})
+    .expect(200);
+
+    const user = await User.findById(userOneID);
+    expect(user.friends.length).toBe(2);
+    expect(user.friends[1]).toEqual(userThreeID);
 })

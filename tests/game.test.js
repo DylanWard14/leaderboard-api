@@ -7,9 +7,6 @@ const {
     userOne,
     gameOneID,
     gameOne,
-    scoreOneID,
-    scoreOneDate,
-    scoreOne,
     setupDatabase
 } = require('./fixtures/db');
 
