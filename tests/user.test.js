@@ -62,6 +62,17 @@ test("Should read the current users profile", async () => {
     })
 })
 
+test("Should not read the profile of unauthenticated user", async () => {
+    const response = await request(app)
+    .get('/user/me')
+    .send()
+    .expect(401);
+
+    expect(response.body).toMatchObject({
+        error: "Please Authenticate"
+    })
+})
+
 test("Should logout user", async () => {
     await request(app)
     .post('/user/logout')
