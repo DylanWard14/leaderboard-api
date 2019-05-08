@@ -8,6 +8,7 @@ const {
     userOne,
     userTwoID,
     userTwo,
+    userThree,
     gameOneID,
     gameOne,
     gameTwo,
@@ -19,6 +20,8 @@ const {
     scoreTwo,
     scoreThree,
     scoreThreeID,
+    scoreFour,
+    scoreFourID,
     setupDatabase
 } = require('./fixtures/db');
 const mongoose = require('mongoose');
@@ -117,4 +120,29 @@ test("Should get all scores from a game filtered by friends only", async () => {
             owner: scoreOne.owner
         }
     ]);
+})
+
+test("Should get all scores assosicated with a user", async () => {
+    const response = await request(app)
+    .get('/scores/other')
+    .query({username: userThree.username})
+    .send()
+    .expect(200);
+
+    expect(response.body.length).toBe(2);
+    expect(response.body).toMatchObject([
+        {
+            _id: scoreThreeID.toString(),
+            score: scoreThree.score,
+            owner: scoreThree.owner,
+            game: scoreThree.game.toString(),
+        },
+        {
+            _id: scoreFourID.toString(),
+            score: scoreFour.score,
+            owner: scoreFour.owner,
+            game: scoreFour.game.toString(),
+        }
+    ])
+
 })
