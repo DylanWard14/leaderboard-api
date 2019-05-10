@@ -137,3 +137,18 @@ test("Should add a friend", async () => {
     expect(user.friends.length).toBe(2);
     expect(user.friends[1]).toEqual(userThreeID);
 })
+
+// Update user
+test("Should update a user", async () => {
+    const reponse = await request(app)
+    .patch('/user/me')
+    .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+    .send({name: "UPDATE", username: "NewName", email: "test123@test.com"})
+    .expect(200);
+
+    const user = await User.findById(userOneID);
+    expect(user.name).toBe("UPDATE");
+    expect(user.username).toBe("NewName");
+    expect(user.email).toBe("test123@test.com");
+
+})

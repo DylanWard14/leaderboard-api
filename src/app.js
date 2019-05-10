@@ -420,4 +420,32 @@ app.get('/scores/other', async(req,res) => {
     res.send(scores);
 })
 
+// Update user profile (change: name, password, email or username)
+app.patch('/user/me', auth, async (req,res) => {
+    const updates = Object.keys(req.body);
+    const allowedUpdates = ["name", "username", "email", "password"];
+
+    const validUpdates = updates.filter((update) => {
+        if (allowedUpdates.includes(update))
+        {
+            return update;
+        }
+    })
+
+    if(!validUpdates)
+    {
+        return res.status(400).send({error: "Please choose a valid field to update"});
+    }
+
+    try {
+        validUpdates.forEach((update) => {
+            req.user[update] = req.body[update];
+        })
+        await req.user.save();
+        res.send(req.user);
+    } catch (e) {
+        return res.status(400).send({error: e});
+    }
+})
+
 module.exports = app;
